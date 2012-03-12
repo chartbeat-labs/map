@@ -165,6 +165,29 @@ labs.widget.Map.prototype.getIcon_ = function() {
 
 
 /**
+ * Get the popup content for a given data entry.
+ *
+ * @param {Object} entry Data object from /recent call
+ * @return {string}
+ *
+ * @private
+ */
+labs.widget.Map.prototype.getContent_ = function(entry) {
+  var title = entry['i'];
+  var content = [];
+  content.push('<div><b>' + title + '</b>');
+  content.push('<br/>Load time: ' + Math.round(entry['b'] / 1000) + 's');
+  content.push(', ' + (entry['n'] == 1 ? 'new' : 'returning'));
+  if (entry['r']) {
+    var domain = new goog.Uri(entry['r']).getDomain();
+    content.push('<br/>From: ' + domain);
+  }
+  content.push('</div>');
+  return content.join('');  
+};
+
+
+/**
  * Show a marker and an info window on the map for the given data
  * entry. The marker and window is removed automatically again after a
  * given delay.
@@ -179,23 +202,10 @@ labs.widget.Map.prototype.getIcon_ = function() {
 labs.widget.Map.prototype.showMarker_ = function(entry, delay, infoRemoveDelay, removeDelay) {
   var map = this.map_;
   var pos = new L.LatLng(entry['lat'], entry['lng']);
-  var title = entry['i'];
-  var hash = goog.crypt.hash32.encodeString(entry['p']);
   var icon = this.getIcon_();
-  var marker = new L.Marker(pos,
-                            {
-                              'icon': icon
-                            });
-  var content = [];
-  content.push('<div><b>' + title + '</b>');
-  content.push('<br/>Load time: ' + Math.round(entry['b'] / 1000) + 's');
-  content.push(', ' + (entry['n'] == 1 ? 'new' : 'returning'));
-  if (entry['r']) {
-    var domain = new goog.Uri(entry['r']).getDomain();
-    content.push('<br/>From: ' + domain);
-  }
-  content.push('</div>');
-  marker.bindPopup(content.join(''));
+  var marker = new L.Marker(pos, {'icon': icon});
+  marker.bindPopup(this.getContent_(entry));
+
   goog.Timer.callOnce(function() {
                         console.log("marker: " + pos);
                         map.addLayer(marker);

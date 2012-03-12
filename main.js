@@ -27,10 +27,11 @@ goog.require('goog.uri.utils');
  * @param {string|Element} element Element to render the widget in.
  * @param {string} host Hostname to show data for.
  * @param {string} apiKey API key to use.
+ * @param {string=} opt_mediaUrl Optional media url
  * 
  * @constructor
  */
-labs.widget.Map = function(element, host, apiKey) {
+labs.widget.Map = function(element, host, apiKey, opt_mediaUrl) {
   /**
    * @type {Element}
    * @private
@@ -48,6 +49,12 @@ labs.widget.Map = function(element, host, apiKey) {
    * @private
    */
   this.apiKey_ = apiKey;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.mediaUrl_ = opt_mediaUrl || '';
 
   /**
    * Update interval for background data (ms)
@@ -140,40 +147,18 @@ labs.widget.Map.prototype.update_ = function(event) {
 
 
 /**
- * Returns a data uri for a marker.
+ * Returns an icon for the marker.
  *
- * @param {number} size Icon size (px).
- * @param {number} seed Choose color consistently using this "seed".
  * @return {L.Icon}
- *
  * @private
  */
-labs.widget.Map.prototype.getIcon_ = function(size, seed) {
-  var center = Math.floor(size / 2);
-  var radius = center - 1;
-  var canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  var context = canvas.getContext('2d');
-  context.strokeStyle = 'black';
-  context.fillStyle = 'hsl(' + (seed % 360) + ', 78%, 63%)';
-
-  context.beginPath();
-  context.arc(center, center, radius, 0, 2 * Math.PI * 2);
-  context.closePath();
-  context.fill();
-
-  context.beginPath();
-  context.arc(center, center, radius, 0, 2 * Math.PI * 2);
-  context.closePath();
-  context.stroke();
-
+labs.widget.Map.prototype.getIcon_ = function() {
   // TODO: move to separate class
-  var icon = new L.Icon(canvas.toDataURL());
-  icon.iconSize = new L.Point(size, size);
+  var icon = new L.Icon(this.mediaUrl_ + 'images/labs/map/red-pin.png');
+  icon.iconSize = new L.Point(26, 29);
   icon.shadowSize = icon.iconSize;
-  icon.iconAnchor = new L.Point(center, center);
-  icon.popupAnchor = new L.Point(0, -center);
+  icon.iconAnchor = new L.Point(26, 29);
+  icon.popupAnchor = new L.Point(-17, -29);
 
   return icon;
 };
@@ -196,7 +181,7 @@ labs.widget.Map.prototype.showMarker_ = function(entry, delay, infoRemoveDelay, 
   var pos = new L.LatLng(entry['lat'], entry['lng']);
   var title = entry['i'];
   var hash = goog.crypt.hash32.encodeString(entry['p']);
-  var icon = this.getIcon_(16, hash);
+  var icon = this.getIcon_();
   var marker = new L.Marker(pos,
                             {
                               'icon': icon

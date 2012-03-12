@@ -17,6 +17,269 @@ goog.require('goog.Timer');
 goog.require('goog.Uri');
 goog.require('goog.uri.utils');
 
+/**
+ * Mapping from country code to country.
+ * @const
+ */
+var COUNTRIES = {
+'AF': 'Afghanistan',
+'AX': 'Aland Islands',
+'AL': 'Albania',
+'DZ': 'Algeria',
+'AD': 'Andorra',
+'AO': 'Angola',
+'AI': 'Anguilla',
+'AG': 'Antigua And Barbuda',
+'AR': 'Argentina',
+'AM': 'Armenia',
+'AW': 'Aruba',
+'AU': 'Australia',
+'AT': 'Austria',
+'AZ': 'Azerbaijan',
+'BS': 'Bahamas',
+'BH': 'Bahrain',
+'BD': 'Bangladesh',
+'BB': 'Barbados',
+'BY': 'Belarus',
+'BE': 'Belgium',
+'BZ': 'Belize',
+'BJ': 'Benin',
+'BM': 'Bermuda',
+'BT': 'Bhutan',
+'BO': 'Bolivia',
+'BA': 'Bosnia And Herzegovina',
+'BW': 'Botswana',
+'BR': 'Brazil',
+'BN': 'Brunei Darussalam',
+'BG': 'Bulgaria',
+'BF': 'Burkina Faso',
+'BI': 'Burundi',
+'KH': 'Cambodia',
+'CM': 'Cameroon',
+'CA': 'Canada',
+'CV': 'Cape Verde',
+'CF': 'Central African Republic',
+'TD': 'Chad',
+'CL': 'Chile',
+'CN': 'China',
+'CO': 'Colombia',
+'KM': 'Comoros',
+'CG': 'Republic Of Congo',
+'CD': 'The Democratic Republic Of The Congo',
+'CR': 'Costa Rica',
+'HR': 'Croatia',
+'CU': 'Cuba',
+'CY': 'Cyprus',
+'CZ': 'Czech Republic',
+'DK': 'Denmark',
+'DJ': 'Djibouti',
+'DM': 'Dominica',
+'DO': 'Dominican Republic',
+'EC': 'Ecuador',
+'EG': 'Egypt',
+'SV': 'El Salvador',
+'GQ': 'Equatorial Guinea',
+'ER': 'Eritrea',
+'EE': 'Estonia',
+'ET': 'Ethiopia',
+'FO': 'Faeroe Islands',
+'FK': 'Falkland Islands',
+'FJ': 'Fiji',
+'FI': 'Finland',
+'FR': 'France',
+'GF': 'French Guiana',
+'GA': 'Gabon',
+'GE': 'Georgia',
+'DE': 'Germany',
+'GH': 'Ghana',
+'GR': 'Greece',
+'GL': 'Greenland',
+'GD': 'Grenada',
+'GP': 'Guadeloupe',
+'GT': 'Guatemala',
+'GN': 'Guinea',
+'GY': 'Guyana',
+'HT': 'Haiti',
+'HN': 'Honduras',
+'HK': 'Hong Kong',
+'HU': 'Hungary',
+'IS': 'Iceland',
+'IN': 'India',
+'ID': 'Indonesia',
+'IR': 'Iran',
+'IQ': 'Iraq',
+'IE': 'Ireland',
+'IL': 'Israel',
+'IT': 'Italy',
+'JM': 'Jamaica',
+'JP': 'Japan',
+'JO': 'Jordan',
+'KZ': 'Kazakhstan',
+'KE': 'Kenya',
+'KP': 'North Korea',
+'KR': 'South Korea',
+'KV': 'Kosovo',
+'KW': 'Kuwait',
+'KG': 'Kyrgyzstan',
+'LV': 'Latvia',
+'LB': 'Lebanon',
+'LS': 'Lesotho',
+'LR': 'Liberia',
+'LY': 'Libya',
+'LI': 'Liechtenstein',
+'LT': 'Lithuania',
+'LU': 'Luxembourg',
+'MK': 'Macedonia',
+'MG': 'Madagascar',
+'MW': 'Malawi',
+'MY': 'Malaysia',
+'ML': 'Mali',
+'MT': 'Malta',
+'MQ': 'Martinique',
+'MR': 'Mauritania',
+'MU': 'Mauritius',
+'MX': 'Mexico',
+'MD': 'Moldova',
+'MN': 'Mongolia',
+'ME': 'Montenegro',
+'MS': 'Montserrat',
+'MA': 'Morocco',
+'MZ': 'Mozambique',
+'MM': 'Myanmar',
+'NA': 'Namibia',
+'NP': 'Nepal',
+'NL': 'Netherlands',
+'NC': 'New Caledonia',
+'NZ': 'New Zealand',
+'NI': 'Nicaragua',
+'NE': 'Niger',
+'NG': 'Nigeria',
+'NO': 'Norway',
+'OM': 'Oman',
+'PK': 'Pakistan',
+'PW': 'Palau',
+'PS': 'Palestinian Territories',
+'PA': 'Panama',
+'PG': 'Papua New Guinea',
+'PY': 'Paraguay',
+'PE': 'Peru',
+'PH': 'Philippines',
+'PL': 'Poland',
+'PT': 'Portugal',
+'PR': 'Puerto Rico',
+'QA': 'Qatar',
+'RE': 'Reunion',
+'RO': 'Romania',
+'RU': 'Russian Federation',
+'RW': 'Rwanda',
+'KN': 'Saint Kitts And Nevis',
+'LC': 'Saint Lucia',
+'WS': 'Samoa',
+'ST': 'Sao Tome And Principe',
+'SA': 'Saudi Arabia',
+'SN': 'Senegal',
+'RS': 'Serbia',
+'SL': 'Sierra Leone',
+'SG': 'Singapore',
+'SK': 'Slovakia',
+'SI': 'Slovenia',
+'SB': 'Solomon Islands',
+'SO': 'Somalia',
+'ZA': 'South Africa',
+'GS': 'South Georgia And The South Sandwich Islands',
+'ES': 'Spain',
+'LK': 'Sri Lanka',
+'SD': 'Sudan',
+'SR': 'Suriname',
+'SJ': 'Svalbard And Jan Mayen',
+'SZ': 'Swaziland',
+'SE': 'Sweden',
+'CH': 'Switzerland',
+'SY': 'Syrian Arab Republic',
+'TW': 'Taiwan',
+'TJ': 'Tajikistan',
+'TZ': 'Tanzania',
+'TH': 'Thailand',
+'TG': 'Togo',
+'TO': 'Tonga',
+'TT': 'Trinidad And Tobago',
+'TN': 'Tunisia',
+'TR': 'Turkey',
+'TM': 'Turkmenistan',
+'TC': 'Turks And Caicos Islands',
+'UG': 'Uganda',
+'UA': 'Ukraine',
+'AE': 'United Arab Emirates',
+'GB': 'United Kingdom',
+'US': 'United States',
+'UY': 'Uruguay',
+'UZ': 'Uzbekistan',
+'VU': 'Vanuatu',
+'VE': 'Venezuela',
+'VN': 'Viet Nam',
+'EH': 'Western Sahara',
+'YE': 'Yemen',
+'ZM': 'Zambia',
+'ZW': 'Zimbabwe'
+};
+
+/**
+ * Map from state abbreviations to states.
+ * @const
+ */
+var STATES = {
+'AL': 'Alabama',
+'AK': 'Alaska',
+'AZ': 'Arizona',
+'AR': 'Arkansas',
+'CA': 'California',
+'CO': 'Colorado',
+'CT': 'Connecticut',
+'DE': 'Delaware',
+'DC': 'District of Columbia',
+'FL': 'Florida',
+'GA': 'Georgia',
+'HI': 'Hawaii',
+'ID': 'Idaho',
+'IL': 'Illinois',
+'IN': 'Indiana',
+'IA': 'Iowa',
+'KS': 'Kansas',
+'KY': 'Kentucky',
+'LA': 'Louisiana',
+'ME': 'Maine',
+'MD': 'Maryland',
+'MA': 'Massachusetts',
+'MI': 'Michigan',
+'MN': 'Minnesota',
+'MS': 'Mississippi',
+'MO': 'Missouri',
+'MT': 'Montana',
+'NE': 'Nebraska',
+'NV': 'Nevada',
+'NH': 'New Hampshire',
+'NJ': 'New Jersey',
+'NM': 'New Mexico',
+'NY': 'New York',
+'NC': 'North Carolina',
+'ND': 'North Dakota',
+'OH': 'Ohio',
+'OK': 'Oklahoma',
+'OR': 'Oregon',
+'PA': 'Pennsylvania',
+'RI': 'Rhode Island',
+'SC': 'South Carolina',
+'SD': 'South Dakota',
+'TN': 'Tennessee',
+'TX': 'Texas',
+'UT': 'Utah',
+'VT': 'Vermont',
+'VA': 'Virginia',
+'WA': 'Washington',
+'WV': 'West Virginia',
+'WI': 'Wisconsin',
+'WY': 'Wyoming' };
+
 
 /**
  * Overlays recent visitors on top of a map.
@@ -77,6 +340,10 @@ labs.widget.Map = function(element, host, apiKey, opt_mediaUrl) {
    * @private
    */
   this.numPages_ = 10;
+
+  // TODO: fix
+  // var hostLabel = goog.dom.getElement('hostContainer');
+  // hostLabel.innerHTML = host;
 
   this.initMap_();
 };
@@ -174,16 +441,60 @@ labs.widget.Map.prototype.getIcon_ = function() {
  */
 labs.widget.Map.prototype.getContent_ = function(entry) {
   var title = entry['i'];
+  var newReturning = entry['n'] == 1 ? 'new' : 'returning';
+
   var content = [];
-  content.push('<div><b>' + title + '</b>');
-  content.push('<br/>Load time: ' + Math.round(entry['b'] / 1000) + 's');
-  content.push(', ' + (entry['n'] == 1 ? 'new' : 'returning'));
+  content.push('<div class="content">');
+  content.push('<div class="visitType ' + newReturning + '">');
+  content.push('<span class="icon">' + newReturning + '</span>');
+  content.push('</div> <!-- end .visitType -->');
+  content.push('<div class="data">');
+  content.push('<h2>' + title + '</h2>');
+  content.push('<div class="meta">');
+
+  // Show either location or page load if we don't have it
+  if (entry['country'] && entry['region']) {
+    var region = (entry['country'] == 'US') ? STATES[entry['region']] : entry['region'];
+    content.push('<div class="item locality">');
+    content.push('<span class="label">Visited from </span>');
+    content.push('<span class="value">' + region + ', ' + COUNTRIES[entry['country']] + '</span>');
+    content.push('</div> <!-- end .locality -->');
+  } else {
+    content.push('<div class="item pageLoad">');
+    content.push('<span class="label">Page load took </span>');
+    content.push('<span class="value">' + Math.round(entry['b'] / 1000) + 's</span>');
+    content.push('</div> <!-- end .pageLoad -->');
+  }
+
+  content.push('</div> <!-- End .meta -->');
+  content.push('</div> <!-- End .data -->');
+
+  // Find important referrer
+  var knownDomains = {
+    'facebook.com': 'facebook',
+    'm.facebook.com': 'facebook',
+    'twitter.com': 'twitter',
+    't.co': 'twitter',
+    'digg.com': 'digg',
+    'reddit.com': 'reddit',
+    'stumbleupon.com': 'stumbleupon',
+    'yahoo.com': 'yahoo',
+    'search.yahoo.com': 'yahoo',
+    'google.com': 'google',
+    'news.google.com': 'google'
+  };
   if (entry['r']) {
     var domain = new goog.Uri(entry['r']).getDomain();
-    content.push('<br/>From: ' + domain);
+    // TODO: remove www.
+    if (!!knownDomains[domain]) {
+      content.push('<div class="referrer ' + knownDomains[domain] + '">');
+      content.push('</div> <!-- end .referrer -->');
+    }
   }
-  content.push('</div>');
-  return content.join('');  
+
+  content.push('</div> <!-- End .content -->');
+
+  return content.join('');
 };
 
 

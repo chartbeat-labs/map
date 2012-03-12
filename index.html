@@ -11,8 +11,12 @@
     <script type="text/javascript" src="http://static2.chartbeat.com/js/lib/leaflet.min.js"></script>
     <script src="main-compiled.js"></script>
   </head>
-  <body onload="init('content', 'avc.com', 'efc5d2dc15e4a8a88e387c49847aac69')">
-    <div id="content">
-    </div>
-  </body>
+  <body onload="init('mapContainer', 'avc.com', 'efc5d2dc15e4a8a88e387c49847aac69')">
+    <header>
+      <div class="opposingFloatControl">
+        <a href="#" class="branding element1">chartbeat</a>
+        <h1 id="hostContainer" class="element2"></h1>
+      </div>
+    </header>
+    <div id="mapContainer"></div>
 </html>

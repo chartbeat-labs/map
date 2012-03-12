@@ -7,7 +7,6 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 
 // Our requirements
-goog.require('goog.crypt.hash32');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.events.Event');

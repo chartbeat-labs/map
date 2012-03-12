@@ -517,7 +517,6 @@ labs.widget.Map.prototype.showMarker_ = function(entry, delay, infoRemoveDelay, 
   marker.bindPopup(this.getContent_(entry));
 
   goog.Timer.callOnce(function() {
-                        console.log("marker: " + pos);
                         map.addLayer(marker);
                         marker.openPopup();
                       }, delay, this);

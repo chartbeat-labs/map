@@ -19,20 +19,18 @@ goog.require('goog.uri.utils');
 
 
 /**
- * Overlays recent visitors on top of a Google map.
+ * Overlays recent visitors on top of a map.
  * 
  * Uses these APIs:
- * @see http://code.google.com/apis/maps/documentation/javascript/reference.html
  * @see http://chartbeat.pbworks.com/recent
  *
  * @param {string|Element} element Element to render the widget in.
  * @param {string} host Hostname to show data for.
  * @param {string} apiKey API key to use.
- * @param {boolean} streetView Enable streetview?
  * 
  * @constructor
  */
-labs.widget.Map = function(element, host, apiKey, streetView) {
+labs.widget.Map = function(element, host, apiKey) {
   /**
    * @type {Element}
    * @private
@@ -44,13 +42,6 @@ labs.widget.Map = function(element, host, apiKey, streetView) {
    * @private
    */
   this.host_ = host;
-
-  /**
-   * Show street view too
-   * @type {boolean}
-   * @private
-   */
-  this.streetView_ = streetView;
 
   /**
    * @type {string}
@@ -80,11 +71,6 @@ labs.widget.Map = function(element, host, apiKey, streetView) {
    */
   this.numPages_ = 10;
 
-  if (this.streetView_) {
-    this.updateInterval_ = 60000;
-    this.numPages_ = 4;
-  }
-
   this.initMap_();
 };
 
@@ -95,45 +81,26 @@ labs.widget.Map = function(element, host, apiKey, streetView) {
  * @private
  */
 labs.widget.Map.prototype.initMap_ = function() {
-  var center = new google.maps.LatLng(40, 6.5);
-  var options = {
-    'zoom': 2,
-    'center': center,
-    'mapTypeId': google.maps.MapTypeId.ROADMAP
-  };
+  // Base URL template for loading tiles
+  var tileTemplate = 'http://{s}.tiles.mapbox.com/v3/chartbeat.chartbeat/{z}/{x}/{y}.png';
 
-  /**
-   * @type {google.maps.Map}
-   * @private
-   */
-  this.map_ = new google.maps.Map(this.element_, options);
+  // Tile information
+  var tiles = new L.TileLayer(tileTemplate, {
+    'attribution': 'Map data © OpenStreetMap, Imagery © MapBox',
+    'minZoom': 2,
+    'maxZoom': 8,
+    'subdomains': 'abcd',
+    // Performance shiz
+    'unloadInvisibleTiles': true,
+    'reuseTiles': true
+  });
 
-  if (!this.streetView_) {
-    return;
-  }
+  // Create map and set default view
+  this.map_ = new L.Map(this.element_);
 
-  // Add StreetView
-  var panoramaOptions = {
-    pov: {
-      heading: 34,
-      pitch: 1,
-      zoom: 1
-    }
-  };
-
-  var panoNode = document.getElementById("pano");
-  goog.style.showElement(panoNode, true);
-  goog.style.setHeight(panoNode, "50%");
-  goog.style.setHeight(this.element_, "50%");
-
-
-  /**
-   * @type {google.maps.StreetViewPanorama}
-   * @private
-   */
-  this.panorama_ = new google.maps.StreetViewPanorama(panoNode,
-                                                      panoramaOptions);
-  this.map_.setStreetView(this.panorama_);
+  // Default view over NYC at a distant zoom. Should be sufficient.
+  this.map_.setView(new L.LatLng(40.7141667, -74.0063889), 3);
+  this.map_.addLayer(tiles);
 };
 
 
@@ -177,7 +144,7 @@ labs.widget.Map.prototype.update_ = function(event) {
  *
  * @param {number} size Icon size (px).
  * @param {number} seed Choose color consistently using this "seed".
- * @return {string}
+ * @return {L.Icon}
  *
  * @private
  */
@@ -201,7 +168,14 @@ labs.widget.Map.prototype.getIcon_ = function(size, seed) {
   context.closePath();
   context.stroke();
 
-  return canvas.toDataURL();
+  // TODO: move to separate class
+  var icon = new L.Icon(canvas.toDataURL());
+  icon.iconSize = new L.Point(size, size);
+  icon.shadowSize = icon.iconSize;
+  icon.iconAnchor = new L.Point(center, center);
+  icon.popupAnchor = new L.Point(0, -center);
+
+  return icon;
 };
 
 
@@ -218,15 +192,15 @@ labs.widget.Map.prototype.getIcon_ = function(size, seed) {
  * @private
  */
 labs.widget.Map.prototype.showMarker_ = function(entry, delay, infoRemoveDelay, removeDelay) {
-  var pos = new google.maps.LatLng(entry['lat'], entry['lng']);
+  var map = this.map_;
+  var pos = new L.LatLng(entry['lat'], entry['lng']);
   var title = entry['i'];
   var hash = goog.crypt.hash32.encodeString(entry['p']);
   var icon = this.getIcon_(16, hash);
-  var marker = new google.maps.Marker({
-                                        'position': pos,
-                                        'title': title,
-                                        'icon': icon
-                                      });
+  var marker = new L.Marker(pos,
+                            {
+                              'icon': icon
+                            });
   var content = [];
   content.push('<div><b>' + title + '</b>');
   content.push('<br/>Load time: ' + Math.round(entry['b'] / 1000) + 's');
@@ -236,25 +210,14 @@ labs.widget.Map.prototype.showMarker_ = function(entry, delay, infoRemoveDelay, 
     content.push('<br/>From: ' + domain);
   }
   content.push('</div>');
-
-  var infoWindow = new google.maps.InfoWindow({
-                                                content: content.join('')
-                                              });
+  marker.bindPopup(content.join(''));
   goog.Timer.callOnce(function() {
                         console.log("marker: " + pos);
-                        marker.setMap(this.map_);
-                        infoWindow.open(this.map_, marker);
-                        if (this.streetView_) {
-                          this.panorama_.setPosition(pos);
-                        }
+                        map.addLayer(marker);
+                        marker.openPopup();
                       }, delay, this);
   goog.Timer.callOnce(function() {
-                        infoWindow.close();
-                        delete infoWindow;
-                      }, delay + infoRemoveDelay);
-  goog.Timer.callOnce(function() {
-                        marker.setMap(null);
-                        delete marker;
+                        map.removeLayer(marker);
                       }, delay + removeDelay);
 };
 
@@ -294,16 +257,11 @@ labs.widget.Map.prototype.onData_ = function(data) {
  * @param {string} apiKey API key to use.
  */
 function init(element, host, apiKey) {
-  var streetView = false;
   var params = goog.global.location && goog.global.location.search;
   if (params) {
     var val = goog.uri.utils.getParamValue(params, 'host');
     if (val) {
       host = val;
-    }
-    val = goog.uri.utils.getParamValue(params, 'streetview');
-    if (val && val == "1") {
-      streetView = true;
     }
     val = goog.uri.utils.getParamValue(params, 'apikey');
     if (val) {
@@ -311,7 +269,7 @@ function init(element, host, apiKey) {
     }
   }
 
-  var widget = new labs.widget.Map(element, host, apiKey, streetView);
+  var widget = new labs.widget.Map(element, host, apiKey);
   widget.start();
 }
 

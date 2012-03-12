@@ -1,67 +1,34 @@
-var google = function() {};
-
-google.maps = function() {};
-
 /**
- * @constructor
+ * Leaflet map.
+ *
+ * @see http://leaflet.cloudmade.com/
+ * @namespace
  */
-google.maps.MVCObject = function() {};
+var L;
 
-/**
- * @constructor
- * @param {Element} element
- * @param {Object} config
- */
-google.maps.StreetViewPanorama = function(element, config) {};
+/** @constructor */
+L.Map = function(a){};
+L.Map.prototype.addLayer = function(a){};
+L.Map.prototype.removeLayer = function(){};
+L.Map.prototype.setView = function(a, b){};
 
-/**
- * @param {google.maps.MVCObject} pos
- */
-google.maps.StreetViewPanorama.prototype.setPosition = function(pos) {};
+/** @constructor */
+L.LatLng = function(a, b){};
 
-/**
- * @constructor
- */
-google.maps.Map = function(a, b) {};
+/** @constructor */
+L.Marker = function(a, b){};
+L.Marker.prototype.bindPopup = function(a){};
+L.Marker.prototype.openPopup = function(){};
 
-/**
- * @param {google.maps.StreetViewPanorama} panorama
- */
-google.maps.Map.prototype.setStreetView = function(panorama) {};
+/** @constructor */
+L.TileLayer = function(a, b){};
 
-/**
- * @constructor
- * @param {number} lat
- * @param {number} lng
- */
-google.maps.LatLng = function(lat, lng) {};
+/** @constructor */
+L.Icon = function(a){};
+L.icon.prototype.iconSize = null;
+L.icon.prototype.shadowSize = null;
+L.icon.prototype.iconAnchor = null;
+L.icon.prototype.popupAnchor = null;
 
-/**
- * @constructor
- * @param {Object} options
- * @extends {google.maps.MVCObject}
- */
-google.maps.Marker = function(options) {};
-
-/**
- * @param {google.maps.Map} map
- */
-google.maps.Marker.prototype.setMap = function(map) {};
-
-/**
- * @constructor
- */
-google.maps.InfoWindow = function(object) {};
-
-/**
- * @param {google.maps.Map} map
- * @param {google.maps.MVCObject=} anchor
- */
-google.maps.InfoWindow.prototype.open = function(map, anchor) {};
-google.maps.InfoWindow.prototype.close = function() {};
-
-google.maps.MapTypeId = function() {};
-/**
- * @const
- */
-google.maps.MapTypeId.ROADMAP = 0;
+/** @constructor */
+L.Point = function(a, b){};

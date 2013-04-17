@@ -355,7 +355,9 @@ labs.widget.Map = function(element, host, apiKey, opt_mediaUrl) {
  */
 labs.widget.Map.prototype.initMap_ = function() {
   // Base URL template for loading tiles
-  var tileTemplate = 'http://{s}.tiles.mapbox.com/v3/chartbeat.chartbeat/{z}/{x}/{y}.png';
+  var templatePath = '/v3/chartbeat.chartbeat/{z}/{x}/{y}.png';
+  var tileTemplate = (goog.global.location.protocol === 'https:' ?
+      'https://dnv9my2eseobd.cloudfront.net' : 'http://{s}.tiles.mapbox.com') + templatePath;
 
   // Tile information
   var tiles = new L.TileLayer(tileTemplate, {
@@ -382,7 +384,7 @@ labs.widget.Map.prototype.initMap_ = function() {
  * functionality.
  */
 labs.widget.Map.prototype.start = function() {
-  var uri = new goog.Uri('http://api.chartbeat.com/recent/');
+  var uri = new goog.Uri('//api.chartbeat.com/recent/');
   uri.setParameterValue('host', this.host_);
   uri.setParameterValue('apikey', this.apiKey_);
   uri.setParameterValue('limit', this.numPages_);
@@ -511,6 +513,9 @@ labs.widget.Map.prototype.getContent_ = function(entry) {
  */
 labs.widget.Map.prototype.showMarker_ = function(entry, delay, infoRemoveDelay, removeDelay) {
   var map = this.map_;
+  if (!('lat' in entry) || !('lng' in entry)) {
+    return;
+  }
   var pos = new L.LatLng(entry['lat'], entry['lng']);
   var icon = this.getIcon_();
   var marker = new L.Marker(pos, {'icon': icon});
